@@ -1,3 +1,3 @@
 # VestFatec
 
-VestFatec é um projeto estudantil teste
+VestFatec é um projeto estudantil 
