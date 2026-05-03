@@ -18,8 +18,8 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Compilar aplicacao
-        run: mvn -B -DskipTests clean compile
+      - name: Empacotar aplicacao
+        run: mvn -B -DskipTests clean package
 
       - name: Executar testes
         run: mvn -B test
