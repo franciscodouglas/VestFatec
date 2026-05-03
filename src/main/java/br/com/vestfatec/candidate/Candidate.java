@@ -56,4 +56,11 @@ public class Candidate {
     public String getPhone() {
         return phone;
     }
+
+    public void update(String fullName, String cpf, String email, String phone) {
+        this.fullName = fullName;
+        this.cpf = cpf;
+        this.email = email;
+        this.phone = phone;
+    }
 }
