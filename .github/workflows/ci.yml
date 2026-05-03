@@ -23,3 +23,9 @@ jobs:
 
       - name: Executar testes
         run: mvn -B test
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app
+          path: target/*.jar
