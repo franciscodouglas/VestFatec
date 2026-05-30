@@ -2,6 +2,11 @@ name: CI
 
 on:
   push:
+  pull_request:
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   build-and-test:
@@ -10,6 +15,9 @@ jobs:
     steps:
       - name: Baixar codigo
         uses: actions/checkout@v4
+
+      - name: Subir dependencias com Docker Compose
+        run: docker compose up -d --wait
 
       - name: Configurar Java JDK 21
         uses: actions/setup-java@v4
@@ -24,8 +32,43 @@ jobs:
       - name: Executar testes
         run: mvn -B test
 
+      - name: Build imagem Docker
+        run: docker build -t vestfatec:ci .
+
+      - name: Definir nome da imagem
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        run: echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - name: Login no GHCR
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publicar imagem no GHCR
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            docker tag vestfatec:ci "${IMAGE_NAME}:latest"
+            docker tag vestfatec:ci "${IMAGE_NAME}:sha-${GITHUB_SHA::7}"
+            docker push "${IMAGE_NAME}:latest"
+            docker push "${IMAGE_NAME}:sha-${GITHUB_SHA::7}"
+          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            docker tag vestfatec:ci "${IMAGE_NAME}:${VERSION}"
+            docker tag vestfatec:ci "${IMAGE_NAME}:sha-${GITHUB_SHA::7}"
+            docker push "${IMAGE_NAME}:${VERSION}"
+            docker push "${IMAGE_NAME}:sha-${GITHUB_SHA::7}"
+          fi
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: app
           path: target/*.jar
+
+      - name: Derrubar dependencias
+        if: always()
+        run: docker compose down -v
