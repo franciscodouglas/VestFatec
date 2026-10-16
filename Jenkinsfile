@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'JDK21'
+        maven 'Maven3'
+    }
+
+    stages {
+        stage('Baixar projeto') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/FATEC-CPS-2026/VestFatec-IEC-2026-2.git'
+            }
+        }
+
+        stage('Compilar e testar') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'mvn -B -ntp clean package'
+                    } else {
+                        bat 'mvn -B -ntp clean package'
+                    }
+                }
+            }
+        }
+
+        stage('Arquivar JAR') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.jar',
+                                 allowEmptyArchive: false
+            }
+        }
+    }
+}
