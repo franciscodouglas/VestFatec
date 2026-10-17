@@ -12,11 +12,11 @@ class VestfatecApplicationTests {
     void contextLoads() {
     }
 
-    @Test
-    void deveDemonstrarUmaFalha() {
-        org.junit.jupiter.api.Assertions.fail(
-                "Falha intencional para demonstrar o relatório no Jenkins");
-    }
+    // @Test
+    // void deveDemonstrarUmaFalha() {
+    //     org.junit.jupiter.api.Assertions.fail(
+    //             "Falha intencional para demonstrar o relatório no Jenkins");
+    // }
 }
 
 
